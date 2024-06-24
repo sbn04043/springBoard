@@ -2,46 +2,30 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.nc13.mappers.BoardMapper">
-    <select id="selectAll" resultType="boardDTO" parameterType="hashmap">
-        <!-- #{}과 ${}의 차이점
-            #{}: 안에 들어간 값을 ' '으로 감싼다.
-            ${}: 안에 들어간 값을 감싸지 않는다.
-            값을 입력할 때, 입력할 값을 ' '으로 감싸야 하지만
-            Limit 같은 쿼리에 값을 넣을 때에는 ' '로 감싸면 error -->
-        SELECT * FROM board
+<mapper namespace="com.nc13.mappers.ReplyMapper">
+    <select id="selectAll" resultType="replyDTO" parameterType="int">
+        SELECT * FROM reply
         INNER JOIN user
-        ON board.writer_id = user.id
-        ORDER BY board.id DESC
-        LIMIT ${startRow}, ${size}
+        ON reply.writer_id = user.id
+        WHERE board_id = #{boardId}
+        ORDER BY reply.id ASC
     </select>
-
-    <insert id="insert" parameterType="boardDTO" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO board(title, content, writer_id)
-        VALUES(#{title}, #{content}, #{writerId})
+    <select id="selectOne" resultType="replyDTO" parameterType="int">
+        SELECT * FROM reply
+        WHERE id = #{id}
+    </select>
+    <insert id="insert" parameterType="replyDTO">
+        INSERT INTO reply(content, entry_date, modify_date, writer_id, board_id)
+        VALUES(#{content}, NOW(), NOW(), #{writerId}, #{boardId})
     </insert>
-
-    <select id="selectOne" parameterType="int" resultType="boardDTO">
-        SELECT * FROM board
-        INNER JOIN user
-        ON board.writer_id = user.id
-        WHERE board.id = #{id}
-    </select>
-
-    <update id="update" parameterType="BoardDTO">
-        UPDATE board
-        SET title = #{title},
-        content = #{content},
+    <update id="update" parameterType="replyDTO">
+        UPDATE reply
+        SET content = #{content},
         modify_date = NOW()
         WHERE id = #{id}
     </update>
-
     <delete id="delete" parameterType="int">
-        DELETE FROM board
+        DELETE FROM reply
         WHERE id = #{id}
     </delete>
-
-    <select id="selectMaxRow" resultType="int">
-        SELECT COUNT(*) FROM board
-    </select>
 </mapper>
