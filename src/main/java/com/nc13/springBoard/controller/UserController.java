@@ -5,6 +5,7 @@ import com.nc13.springBoard.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,8 @@ public class UserController {
     //실제 SQL 통신을 담당할 Service 객체
     @Autowired
     private UserService userService;
+    @Autowired
+    private BCryptPasswordEncoder encoder;
 
     //사용자가 로그인 할 때 실행하는 auth 메소드
     //POST GET 방식으로 웹페이지의 값을 받을 땐
@@ -27,6 +30,7 @@ public class UserController {
     //자동으로 데이터가 비인딩 된다.
     @PostMapping("auth")
     public String auth(UserDTO user, HttpSession session) {
+        System.out.println("userController.auth()");
         UserDTO result = userService.auth(user);
         if (result != null) {
             session.setAttribute("logIn", result);
@@ -44,6 +48,7 @@ public class UserController {
     @PostMapping("register")
     public String register(UserDTO user, RedirectAttributes redirectAttributes) {
         if (userService.validateUsername(user.getUsername())) {
+            user.setPassword(encoder.encode(user.getPassword()));
             userService.register(user);
             System.out.println("회원가입 성공");
         } else {

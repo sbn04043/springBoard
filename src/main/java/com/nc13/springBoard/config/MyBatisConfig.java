@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 //클래스를 만들어 관리한다.
 
 @Configuration
-public class myBatisConfig {
+public class MyBatisConfig {
     //컨트롤러, 서비스, config 같이 스프링 프레임워크가 관리하는
     //객체들 중 특수한 성격을 띄는 객체들은 어노테이션을 붙이지만
     //특수한 성격을 띄지 않거나 별개의 라이브러리 객체일 경우,

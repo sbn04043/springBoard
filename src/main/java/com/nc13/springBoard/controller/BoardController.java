@@ -8,6 +8,7 @@ import com.nc13.springBoard.service.ReplyService;
 import com.nc13.springBoard.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,15 +33,12 @@ public class BoardController {
     private ReplyService replyService;
 
     @GetMapping("showAll")
-    public String showAll(Model model) {
+    public String showAll() {
         return "redirect:/board/showAll/1";
     }
 
     @GetMapping("showAll/{pageNo}")
-    public String showAll(HttpSession session, Model model, @PathVariable int pageNo) {
-        UserDTO logIn = (UserDTO) session.getAttribute("logIn");
-        if (logIn == null) return "redirect:/";
-
+    public String showAll(Model model, @PathVariable int pageNo, Authentication authentication) {
         //가장 마지막 페이지 번호
         int maxPage = boardService.selectMaxPage();
         model.addAttribute("maxPage", maxPage);
@@ -78,50 +76,23 @@ public class BoardController {
     }
 
     @GetMapping("write")
-    public String write(HttpSession session) {
-        UserDTO logIn = (UserDTO) session.getAttribute("logIn");
-        if (logIn == null) return "redirect:/";
-
+    public String write() {
         return "/board/write";
     }
 
     @PostMapping("write")
-    public String write(BoardDTO board, HttpSession session, MultipartFile[] file) {
-        //file은 register에서 올린 파일들
-        UserDTO logIn = (UserDTO) session.getAttribute("logIn");
-        if (logIn == null) return "redirect:/";
-
+    public String write(BoardDTO board, Authentication authentication) {
+        UserDTO logIn = (UserDTO) authentication.getPrincipal();
         board.setWriterId(logIn.getId());
-
-        String path = "c:\\uploads";
-
-        //폴더가 없으면 만든다.(경로까지 만들 수 있음)
-        File pathDir = new File(path);
-        if (!pathDir.exists()) {
-            pathDir.mkdirs();
-        }
-
-        //업로드 한 파일 이름을 지칭
-
-
-        try {
-            for (MultipartFile mf : file) {
-                File f = new File(path, mf.getOriginalFilename());
-                //들어온 파일을 지정한 path에 저장(복사)
-                mf.transferTo(f);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         boardService.insert(board);
+
         return "redirect:/board/showOne/" + board.getId();
     }
 
+
     @GetMapping("showOne/{id}")
-    public String showOne(@PathVariable int id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        UserDTO logIn = (UserDTO) session.getAttribute("logIn");
-        if (logIn == null) return "redirect:/";
+    public String showOne(@PathVariable int id, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
+
 
         BoardDTO boardDTO = boardService.selectOne(id);
         if (boardDTO == null) {
@@ -243,3 +214,24 @@ public class BoardController {
         return resultMap;
     }
 }
+
+//        String path = "c:\\uploads";
+//
+//        //폴더가 없으면 만든다.(경로까지 만들 수 있음)
+//        File pathDir = new File(path);
+//        if (!pathDir.exists()) {
+//            pathDir.mkdirs();
+//        }
+//
+//        //업로드 한 파일 이름을 지칭
+//
+//
+//        try {
+//            for (MultipartFile mf : file) {
+//                File f = new File(path, mf.getOriginalFilename());
+//                //들어온 파일을 지정한 path에 저장(복사)
+//                mf.transferTo(f);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
